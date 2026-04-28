@@ -1,0 +1,9 @@
+backend/
+.git
+.gitignore
+*.md
+node_modules
+.env
+.env.*
+.next
+.DS_Store
