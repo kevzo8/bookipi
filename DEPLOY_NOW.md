@@ -32,7 +32,7 @@ sh: line 1: vite: command not found
 
 ### 1. Push to GitHub
 ```bash
-cd /vercel/share/v0-project
+cd /vercel/share/bookipi-project
 git push origin main
 ```
 

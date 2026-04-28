@@ -12,6 +12,7 @@ export function App() {
   const [error, setError] = useState<string>('');
   const [loading, setLoading] = useState(true);
   const [hasPurchased, setHasPurchased] = useState(false);
+  const [lastUpdated, setLastUpdated] = useState(new Date());
 
   // Fetch sale status on mount and poll periodically
   useEffect(() => {
@@ -33,6 +34,7 @@ export function App() {
     try {
       const status = await apiService.getSaleStatus();
       setSaleStatus(status);
+      setLastUpdated(new Date());
       setLoading(false);
       setError('');
     } catch (err) {
@@ -66,16 +68,14 @@ export function App() {
       if (result.success) {
         setPurchaseStatus('success');
         setHasPurchased(true);
+      } else if (result.message.toLowerCase().includes('already')) {
+        setPurchaseStatus('already_purchased');
+      } else if (result.message.toLowerCase().includes('sold out')) {
+        setPurchaseStatus('sold_out');
+      } else if (result.message.toLowerCase().includes('not')) {
+        setPurchaseStatus('inactive');
       } else {
-        if (result.message.includes('already purchased')) {
-          setPurchaseStatus('already_purchased');
-        } else if (result.message.includes('sold out')) {
-          setPurchaseStatus('sold_out');
-        } else if (result.message.includes('not')) {
-          setPurchaseStatus('inactive');
-        } else {
-          setPurchaseStatus('error');
-        }
+        setPurchaseStatus('error');
       }
     } catch (err) {
       setPurchaseStatus('error');
@@ -84,134 +84,162 @@ export function App() {
     }
   }
 
-  const getStatusColor = (status: string) => {
+  const getStatusLabel = (status: string) => {
     switch (status) {
       case 'active':
-        return '#10b981';
+        return 'Live';
       case 'upcoming':
-        return '#f59e0b';
+        return 'Starting Soon';
       case 'sold_out':
+        return 'Sold Out';
       case 'ended':
-        return '#ef4444';
+        return 'Closed';
       default:
-        return '#6b7280';
+        return 'Unknown';
     }
   };
 
-  const getStatusIcon = (status: string) => {
+  const getStatusTone = (status: string) => {
     switch (status) {
       case 'active':
-        return '🔴';
+        return 'is-active';
       case 'upcoming':
-        return '⏱️';
+        return 'is-upcoming';
       case 'sold_out':
-        return '❌';
       case 'ended':
-        return '⏹️';
+        return 'is-closed';
       default:
-        return '❓';
+        return 'is-unknown';
     }
   };
+
+  const getResultTone = (result: PurchaseResponse | null) => {
+    if (!result) {
+      return '';
+    }
+
+    if (result.success) {
+      return 'success';
+    }
+
+    if (result.message.toLowerCase().includes('already')) {
+      return 'info';
+    }
+
+    if (result.message.toLowerCase().includes('sold out')) {
+      return 'warning';
+    }
+
+    return 'error';
+  };
+
+  const saleState = saleStatus?.status || 'unknown';
+  const statusTone = getStatusTone(saleState);
 
   if (loading) {
     return (
-      <div className="container">
-        <div className="loading">Loading...</div>
+      <div className="page-shell">
+        <main className="loading-panel">
+          <img className="brand-logo" src="/bookipi_logo.png" alt="Bookipi" />
+          <p className="loading-copy">Loading flash sale status...</p>
+        </main>
       </div>
     );
   }
 
   return (
-    <div className="container">
-      <div className="card">
-        <header className="header">
-          <h1>⚡ Flash Sale</h1>
-          <p className="subtitle">Limited Edition Product</p>
+    <div className="page-shell">
+      <div className="ambient ambient-top" />
+      <div className="ambient ambient-bottom" />
+
+      <main className="sale-app">
+        <header className="brand-header">
+          <img className="brand-logo" src="/bookipi_logo.png" alt="Bookipi" />
+          <p className="brand-kicker">Flash Sale Monitor</p>
         </header>
 
-        {/* Sale Status Card */}
-        <div className="status-card" style={{ borderLeftColor: getStatusColor(saleStatus?.status || '') }}>
-          <div className="status-header">
-            <span className="status-icon">{getStatusIcon(saleStatus?.status || '')}</span>
-            <h2 className="status-title">{saleStatus?.status.toUpperCase() || 'UNKNOWN'}</h2>
-          </div>
-          <p className="status-message">{saleStatus?.message || 'Unable to fetch status'}</p>
-          {saleStatus?.remainingStock !== undefined && (
-            <p className="remaining-stock">
-              📦 {saleStatus.remainingStock} items remaining
+        <section className="hero-card">
+          <div className="hero-copy">
+            <p className="eyebrow">Limited Release</p>
+            <h1>Bookipi Premium Toolkit</h1>
+            <p>
+              <span className="hero-description">
+                High-demand release with one purchase per user. Inventory updates in
+                {' real\u00A0time.'}
+              </span>
             </p>
-          )}
-        </div>
-
-        {/* Error Message */}
-        {error && (
-          <div className="error-message" role="alert">
-            {error}
           </div>
-        )}
-
-        {/* Purchase Result */}
-        {purchaseResult && (
-          <div className={`result-message ${purchaseResult.success ? 'success' : 'error'}`}>
-            {purchaseResult.message}
+          <div className={`status-pill ${statusTone}`}>
+            <span className="status-dot" />
+            <span>{getStatusLabel(saleState)}</span>
           </div>
-        )}
+        </section>
 
-        {/* User Input Section */}
-        <div className="input-section">
-          <label htmlFor="userId">User ID (Email or Username):</label>
-          <input
-            id="userId"
-            type="text"
-            placeholder="Enter your email or username"
-            value={userId}
-            onChange={(e) => setUserId(e.target.value)}
-            disabled={purchaseStatus === 'loading'}
-            className="input"
-          />
+        <section className="grid-panel">
+          <article className="inventory-card">
+            <p className="panel-label">Remaining Inventory</p>
+            <p className="inventory-value">{saleStatus?.remainingStock ?? 0}</p>
+            <p className="inventory-message">
+              {saleStatus?.message || 'Unable to fetch status'}
+            </p>
+            <p className="updated-at">Updated {lastUpdated.toLocaleTimeString()}</p>
+          </article>
 
-          {hasPurchased && (
-            <div className="already-purchased-badge">
-              ✅ You have already purchased this item
-            </div>
-          )}
-        </div>
+          <article className="purchase-card">
+            <label htmlFor="userId" className="field-label">
+              Customer Identifier
+            </label>
+            <input
+              id="userId"
+              type="text"
+              placeholder="name@company.com"
+              value={userId}
+              onChange={(e) => setUserId(e.target.value)}
+              disabled={purchaseStatus === 'loading'}
+              className="input"
+            />
 
-        {/* Purchase Button */}
-        <button
-          onClick={handlePurchase}
-          disabled={
-            purchaseStatus === 'loading' ||
-            !saleStatus ||
-            saleStatus.status !== 'active' ||
-            !userId.trim() ||
-            hasPurchased
-          }
-          className={`purchase-button ${purchaseStatus === 'loading' ? 'loading' : ''} ${
-            purchaseStatus === 'success' ? 'success' : ''
-          }`}
-        >
-          {purchaseStatus === 'loading' && <span className="spinner"></span>}
-          {purchaseStatus === 'success' ? '✓ Purchase Complete' : 'BUY NOW'}
-        </button>
+            {hasPurchased && (
+              <div className="hint-banner success">This account already secured an item.</div>
+            )}
 
-        {/* Info Section */}
-        <div className="info-section">
-          <h3>How it works:</h3>
-          <ul>
-            <li>Enter your unique user identifier</li>
-            <li>Click "BUY NOW" to attempt a purchase</li>
-            <li>Each user can only purchase 1 item</li>
-            <li>Limited stock - first come, first served</li>
-          </ul>
-        </div>
+            {error && (
+              <div className="hint-banner error" role="alert">
+                {error}
+              </div>
+            )}
 
-        {/* Footer */}
-        <footer className="footer">
-          <p>Sale System Status: <span className="status-indicator">●</span> Online</p>
-          <p className="timestamp">Last updated: {new Date().toLocaleTimeString()}</p>
-        </footer>
-      </div>
+            {purchaseResult && (
+              <div className={`hint-banner ${getResultTone(purchaseResult)}`}>
+                {purchaseResult.message}
+              </div>
+            )}
+
+            <button
+              onClick={handlePurchase}
+              disabled={
+                purchaseStatus === 'loading' ||
+                !saleStatus ||
+                saleStatus.status !== 'active' ||
+                !userId.trim() ||
+                hasPurchased
+              }
+              className={`purchase-button ${purchaseStatus === 'loading' ? 'loading' : ''} ${
+                purchaseStatus === 'success' ? 'success' : ''
+              }`}
+            >
+              {purchaseStatus === 'loading' && <span className="spinner" />}
+              {purchaseStatus === 'success' ? 'Purchase Complete' : 'Buy Now'}
+            </button>
+
+            <ul className="rules-list">
+              <li>One unit per user identity</li>
+              <li>Purchases only while sale is active</li>
+              <li>Orders are served first-come, first-served</li>
+            </ul>
+          </article>
+        </section>
+      </main>
     </div>
   );
 }

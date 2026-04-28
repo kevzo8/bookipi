@@ -10,10 +10,10 @@
   ],
   "scripts": {
     "install-deps": "pnpm install",
-    "dev": "concurrently \"pnpm -F backend dev\" \"pnpm -F frontend dev\"",
-    "build": "pnpm -F backend build && pnpm -F frontend build",
-    "test": "pnpm -F backend test",
-    "stress-test": "pnpm -F backend stress-test",
+    "dev": "concurrently \"pnpm -F flash-sale-backend dev\" \"pnpm -F flash-sale-frontend dev\"",
+    "build": "pnpm -F flash-sale-backend build && pnpm -F flash-sale-frontend build",
+    "test": "pnpm -F flash-sale-backend test",
+    "stress-test": "pnpm -F flash-sale-backend stress-test",
     "format": "prettier --write \"**/*.{ts,tsx,json,md}\""
   },
   "devDependencies": {
@@ -29,5 +29,6 @@
     "redis": "^5.12.1",
     "vite": "^8.0.10",
     "vitest": "^4.1.5"
-  }
+  },
+  "packageManager": "pnpm@10.28.1+sha512.7d7dbbca9e99447b7c3bf7a73286afaaf6be99251eb9498baefa7d406892f67b879adb3a1d7e687fc4ccc1a388c7175fbaae567a26ab44d1067b54fcb0d6a316"
 }

@@ -83,7 +83,7 @@ Frontend (Vercel)  ----HTTP---->  Backend API Server
 
 ### Option 1: Local Backend Development
 ```bash
-cd /vercel/share/v0-project/backend
+cd /vercel/share/bookipi-project/backend
 pnpm install
 pnpm dev  # Runs on http://localhost:3000
 ```

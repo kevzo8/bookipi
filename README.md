@@ -191,6 +191,29 @@ After User2 Duplicate Attempt:
 - Redis (local or via Docker)
 - Port 3000 (backend) and 5173 (frontend) available
 
+### Configuration
+
+Backend supports these environment variables:
+
+- `PORT` (default `3000`)
+- `HOST` (default `0.0.0.0`)
+- `CORS_ORIGIN` (default allows all)
+- `REDIS_HOST` (default `localhost`)
+- `REDIS_PORT` (default `6379`)
+- `PRODUCT_ID` (default `limited-edition-product`)
+- `INITIAL_STOCK` (default `100`)
+- `FLASH_SALE_START` (Unix ms timestamp or ISO string)
+- `FLASH_SALE_END` (Unix ms timestamp or ISO string)
+- `FLASH_SALE_DURATION_MS` (used when end is not set)
+- `FLASH_SALE_START_OFFSET_MINUTES` (default `-5` for local testing)
+- `API_KEY` (optional, send as `x-api-key`)
+- `PURCHASE_RATE_LIMIT` (default `10` attempts)
+- `RATE_LIMIT_WINDOW_SECONDS` (default `60`)
+
+Frontend variables:
+
+- `VITE_API_URL` (optional, e.g. `https://your-domain/api`)
+
 ### Quick Start
 
 #### 1. Install Dependencies
@@ -237,6 +260,8 @@ Tests cover:
 - Sale status calculations
 - User status checks
 - Edge cases and error handling
+- API route integration with request/response validation
+- Purchase rate-limit behavior
 
 ### Stress Tests
 
@@ -248,9 +273,10 @@ pnpm stress-test
 
 #### What the Stress Test Does
 1. Sends 500 concurrent purchase requests
-2. Measures response times and throughput
-3. Validates no overselling occurs
-4. Validates concurrency controls work
+2. Sends an additional duplicate-attempt wave for existing users
+3. Measures response times and throughput
+4. Validates no overselling occurs
+5. Validates concurrency controls work
 
 #### Expected Results
 ```
@@ -258,9 +284,10 @@ pnpm stress-test
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 📈 Results:
-   Total Requests: 500
+  Total Requests: 550
    Successful Purchases: 100
-   Already Purchased: 400
+  Already Purchased: 50
+  Duplicate Attempts Sent: 50
    Sold Out Errors: 0
    Network Errors: 0
 
@@ -270,10 +297,103 @@ pnpm stress-test
    Avg Response Time: 45.23ms
 
 ✓ No Overselling: 100 purchases ≤ 100 stock
-✓ No Duplicate Charges: 0 duplicates
+✓ Duplicate User Rejection: already purchased responses returned
 
 🔒 Concurrency Control: PASSED
 ```
+
+## 🧭 Localhost Walkthrough (Manual QA)
+
+Use this section to demo the app end-to-end locally, including browser behavior and API checks.
+
+### Local URLs
+
+- Frontend: `http://localhost:5173`
+- Backend API: `http://localhost:3000/api`
+
+### Sample Test Accounts
+
+You can use any unique string as a user identifier. Suggested test IDs:
+
+- `qa1@example.com`
+- `qa2@example.com`
+- `qa3@example.com`
+- `load_user_001`
+- `load_user_002`
+- `demo_buyer_a`
+- `demo_buyer_b`
+- `stress_user_01`
+- `stress_user_02`
+- `vip_candidate_1`
+
+### Start Services Locally
+
+If Redis/Docker is unavailable, run backend with in-memory fallback:
+
+```powershell
+Set-Location "c:\Users\Kevin Vega\bookipi\backend"
+$env:USE_IN_MEMORY_REDIS='true'
+pnpm dev
+```
+
+In a second terminal, run frontend:
+
+```powershell
+Set-Location "c:\Users\Kevin Vega\bookipi\frontend"
+pnpm dev --host 0.0.0.0 --port 5173
+```
+
+### Browser Test Flow
+
+1. Open `http://localhost:5173`.
+2. Confirm sale status is visible (`ACTIVE`, `UPCOMING`, `ENDED`, or `SOLD_OUT`).
+3. Enter `qa1@example.com` in the user ID field.
+4. Click **BUY NOW**.
+5. Expected: success message (`Purchase successful!`).
+6. Click **BUY NOW** again with the same user.
+7. Expected: duplicate rejection (`You have already purchased this item`).
+8. Switch to `qa2@example.com` and purchase once.
+9. Expected: success and stock decrement.
+10. Repeat with unique users until stock reaches 0.
+11. Expected near depletion: `Item sold out`, and status transitions to `sold_out`.
+
+### Quick API Verification (PowerShell)
+
+Check sale status:
+
+```powershell
+Invoke-RestMethod -Method GET -Uri "http://localhost:3000/api/sale-status"
+```
+
+Successful first purchase:
+
+```powershell
+Invoke-RestMethod -Method POST -Uri "http://localhost:3000/api/purchase" -ContentType "application/json" -Body (@{userId='qa_api_1';productId='limited-edition-product'} | ConvertTo-Json)
+```
+
+Duplicate purchase attempt for same user (should fail):
+
+```powershell
+Invoke-WebRequest -Method POST -Uri "http://localhost:3000/api/purchase" -ContentType "application/json" -Body (@{userId='qa_api_1';productId='limited-edition-product'} | ConvertTo-Json)
+```
+
+Check if user secured an item:
+
+```powershell
+Invoke-RestMethod -Method GET -Uri "http://localhost:3000/api/purchase-status?userId=qa_api_1"
+```
+
+### Expected Results Checklist
+
+- First purchase for a new user succeeds.
+- Second purchase for the same user is rejected.
+- Stock decreases only on successful purchases.
+- No overselling occurs.
+- Purchase status endpoint correctly reports `hasPurchased`.
+
+### Optional Reset Between Test Runs
+
+Restart backend to reset in-memory stock and purchase state when using `USE_IN_MEMORY_REDIS=true`.
 
 ## 📡 API Endpoints
 
@@ -495,8 +615,9 @@ flash-sale-system/
 
 ### Short Term
 - [ ] Add pagination for large result sets
-- [ ] Implement request rate limiting
-- [ ] Add audit logging
+- [x] Implement request rate limiting on purchase endpoint
+- [x] Add optional API key protection for purchase endpoint
+- [ ] Add persistent audit logging
 - [ ] Email notifications on purchase
 
 ### Medium Term

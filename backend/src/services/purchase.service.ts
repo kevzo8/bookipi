@@ -85,7 +85,7 @@ export async function processPurchase(
 
   // Attempt atomic purchase
   try {
-    const result = await atomicPurchase(productId, userId, 100);
+    const result = await atomicPurchase(productId, userId);
 
     switch (result.message) {
       case 'SUCCESS':

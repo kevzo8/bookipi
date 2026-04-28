@@ -7,6 +7,7 @@ const REQUEST_TIMEOUT = 10000; // 10 seconds
 interface StressTestResult {
   totalRequests: number;
   successfulPurchases: number;
+  alreadyPurchased: number;
   duplicatePurchases: number;
   soldOut: number;
   errors: number;
@@ -17,6 +18,15 @@ interface StressTestResult {
     message: string;
     count: number;
   }[];
+}
+
+interface SaleStatusApiResponse {
+  status: string;
+  remainingStock: number;
+}
+
+interface PurchaseApiResponse {
+  message?: string;
 }
 
 async function runStressTest(): Promise<void> {
@@ -30,7 +40,8 @@ async function runStressTest(): Promise<void> {
   // First, check sale status
   try {
     const statusResponse = await fetch(`${API_URL}/sale-status`);
-    const saleStatus = await statusResponse.json();
+    const saleStatus =
+      (await statusResponse.json()) as SaleStatusApiResponse;
     console.log(`\n📊 Sale Status Before Test:`);
     console.log(`   Status: ${saleStatus.status}`);
     console.log(`   Remaining Stock: ${saleStatus.remainingStock}`);
@@ -46,9 +57,12 @@ async function runStressTest(): Promise<void> {
   console.log(`\n⏳ Sending ${CONCURRENT_USERS} concurrent purchase requests...`);
 
   // Create user IDs and purchase promises
-  const promises = Array.from({ length: CONCURRENT_USERS }).map((_, i) => {
-    const userId = `stress-test-user-${i}`;
+  const uniqueUserIds = Array.from({ length: CONCURRENT_USERS }).map(
+    (_, i) => `stress-test-user-${i}`,
+  );
 
+  const promises = uniqueUserIds.map((userId) => {
+    const reqStart = performance.now();
     return fetch(`${API_URL}/purchase`, {
       method: 'POST',
       headers: {
@@ -61,8 +75,7 @@ async function runStressTest(): Promise<void> {
       signal: AbortSignal.timeout(REQUEST_TIMEOUT),
     })
       .then(async (response) => {
-        const reqStart = performance.now();
-        const data = await response.json();
+        const data = (await response.json()) as PurchaseApiResponse;
         const reqEnd = performance.now();
         responseTimes.push(reqEnd - reqStart);
 
@@ -77,20 +90,55 @@ async function runStressTest(): Promise<void> {
   // Wait for all requests to complete
   await Promise.all(promises);
 
+  // Repeat with a subset of the same users to validate one-item-per-user enforcement.
+  const duplicateAttemptUsers = uniqueUserIds.slice(
+    0,
+    Math.min(50, uniqueUserIds.length),
+  );
+  await Promise.all(
+    duplicateAttemptUsers.map(async (userId) => {
+      const reqStart = performance.now();
+      try {
+        const response = await fetch(`${API_URL}/purchase`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            userId,
+            productId: 'limited-edition-product',
+          }),
+          signal: AbortSignal.timeout(REQUEST_TIMEOUT),
+        });
+
+        const data = (await response.json()) as PurchaseApiResponse;
+        const reqEnd = performance.now();
+        responseTimes.push(reqEnd - reqStart);
+
+        const message = data.message || 'Unknown';
+        results.set(message, (results.get(message) || 0) + 1);
+      } catch (error) {
+        results.set('ERROR', (results.get('ERROR') || 0) + 1);
+      }
+    }),
+  );
+
   const endTime = performance.now();
   const totalTime = endTime - startTime;
 
   // Calculate statistics
   const result: StressTestResult = {
-    totalRequests: CONCURRENT_USERS,
+    totalRequests: CONCURRENT_USERS + duplicateAttemptUsers.length,
     successfulPurchases: results.get('Purchase successful!') || 0,
-    duplicatePurchases: results.get(
+    alreadyPurchased: results.get(
       'You have already purchased this item',
     ) || 0,
+    duplicatePurchases: duplicateAttemptUsers.length,
     soldOut: results.get('Item sold out') || 0,
     errors: results.get('ERROR') || 0,
     totalTime: totalTime / 1000, // Convert to seconds
-    requestsPerSecond: CONCURRENT_USERS / (totalTime / 1000),
+    requestsPerSecond:
+      (CONCURRENT_USERS + duplicateAttemptUsers.length) / (totalTime / 1000),
     avgResponseTime:
       responseTimes.length > 0
         ? responseTimes.reduce((a, b) => a + b) / responseTimes.length
@@ -107,7 +155,8 @@ async function runStressTest(): Promise<void> {
   console.log(`📈 Results:`);
   console.log(`   Total Requests: ${result.totalRequests}`);
   console.log(`   Successful Purchases: ${result.successfulPurchases}`);
-  console.log(`   Already Purchased: ${result.duplicatePurchases}`);
+  console.log(`   Already Purchased: ${result.alreadyPurchased}`);
+  console.log(`   Duplicate Attempts Sent: ${result.duplicatePurchases}`);
   console.log(`   Sold Out Errors: ${result.soldOut}`);
   console.log(`   Network Errors: ${result.errors}`);
   console.log('');
@@ -129,7 +178,8 @@ async function runStressTest(): Promise<void> {
   // Check sale status after test
   try {
     const statusResponse = await fetch(`${API_URL}/sale-status`);
-    const saleStatus = await statusResponse.json();
+    const saleStatus =
+      (await statusResponse.json()) as SaleStatusApiResponse;
     console.log('');
     console.log(`📊 Sale Status After Test:`);
     console.log(`   Status: ${saleStatus.status}`);
@@ -144,7 +194,7 @@ async function runStressTest(): Promise<void> {
   // Verify concurrency control
   const totalProcessed =
     result.successfulPurchases +
-    result.duplicatePurchases +
+    result.alreadyPurchased +
     result.soldOut;
   console.log('\n🔒 Concurrency Control Verification:');
   console.log(`   Total Processed: ${totalProcessed}`);
@@ -152,7 +202,7 @@ async function runStressTest(): Promise<void> {
     `   No Overselling: ${result.successfulPurchases <= 100 ? '✅ PASSED' : '❌ FAILED'}`,
   );
   console.log(
-    `   No Duplicate Charges: ${result.duplicatePurchases === 0 ? '✅ PASSED' : '❌ FAILED'}`,
+    `   Duplicate User Rejection: ${result.alreadyPurchased > 0 ? '✅ PASSED' : '❌ FAILED'}`,
   );
   console.log('');
 

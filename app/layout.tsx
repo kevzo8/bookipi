@@ -7,25 +7,24 @@ const _geist = Geist({ subsets: ["latin"] });
 const _geistMono = Geist_Mono({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: 'v0 App',
-  description: 'Created with v0',
-  generator: 'v0.app',
+  title: 'Bookipi Flash Sale',
+  description: 'High-throughput flash sale platform for Bookipi',
   icons: {
     icon: [
       {
-        url: '/icon-light-32x32.png',
+        url: '/bookipi_icon.png',
         media: '(prefers-color-scheme: light)',
       },
       {
-        url: '/icon-dark-32x32.png',
+        url: '/bookipi_icon.png',
         media: '(prefers-color-scheme: dark)',
       },
       {
-        url: '/icon.svg',
+        url: '/placeholder-logo.svg',
         type: 'image/svg+xml',
       },
     ],
-    apple: '/apple-icon.png',
+    apple: '/bookipi_icon.png',
   },
 }
 

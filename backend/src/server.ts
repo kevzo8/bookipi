@@ -2,26 +2,21 @@ import Fastify from 'fastify';
 import cors from '@fastify/cors';
 import { connectRedis, disconnectRedis, initializeStock } from './utils/redis.js';
 import { saleRoutes, PRODUCT_ID, INITIAL_STOCK } from './routes/sale.routes.js';
+import { config } from './config.js';
 
-const PORT = parseInt(process.env.PORT || '3000');
-const HOST = process.env.HOST || '0.0.0.0';
+const PORT = config.api.port;
+const HOST = config.api.host;
 
 async function start() {
   const fastify = Fastify({
     logger: {
       level: process.env.LOG_LEVEL || 'info',
-      transport: {
-        target: 'pino-pretty',
-        options: {
-          colorize: true,
-        },
-      },
     },
   });
 
   // Register CORS
-  await fastify.register(cors, {
-    origin: process.env.CORS_ORIGIN || true,
+  await fastify.register(cors as any, {
+    origin: config.api.corsOrigin,
   });
 
   // Connect to Redis

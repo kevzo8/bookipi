@@ -100,7 +100,7 @@ const getAPIBaseUrl = () => {
 
 ### Local Development
 ```bash
-cd /vercel/share/v0-project
+cd /vercel/share/bookipi-project
 pnpm install
 
 # Terminal 1: Start backend
