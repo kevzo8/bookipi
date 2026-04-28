@@ -1,5 +1,5 @@
 import Fastify from 'fastify';
-import cors from 'fastify-cors';
+import cors from '@fastify/cors';
 import { connectRedis, disconnectRedis, initializeStock } from './utils/redis.js';
 import { saleRoutes, PRODUCT_ID, INITIAL_STOCK } from './routes/sale.routes.js';
 

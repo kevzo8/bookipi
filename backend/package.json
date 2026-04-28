@@ -13,8 +13,8 @@
     "stress-test": "tsx src/scripts/stress-test.ts"
   },
   "dependencies": {
+    "@fastify/cors": "^8.5.0",
     "fastify": "^4.25.2",
-    "fastify-cors": "^9.0.1",
     "redis": "^4.6.12",
     "uuid": "^9.0.1"
   },
