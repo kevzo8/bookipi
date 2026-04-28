@@ -44,6 +44,52 @@ Start with these documents in order:
 
 ---
 
+## ✅ One-Page Deployment Checklist (Current Live Setup)
+
+Use this when deploying with Vercel (frontend) + Render (backend).
+
+### 1. Backend on Render
+
+- Create a Web Service from this repo
+- Root Directory: backend
+- Build Command: pnpm install && pnpm build
+- Start Command: pnpm start
+
+Set these environment variables:
+- HOST=0.0.0.0
+- CORS_ORIGIN=https://bookipi.kevinguadalupevega.com
+- USE_IN_MEMORY_REDIS=true
+
+Optional (when moving off in-memory mode):
+- REDIS_HOST=<your redis host>
+- REDIS_PORT=<your redis port>
+- USE_IN_MEMORY_REDIS=false
+
+### 2. Frontend on Vercel
+
+- Build Command: pnpm install && cd frontend && pnpm build
+- Output Directory: frontend/dist
+- Framework: vite
+
+Set this environment variable in Vercel Project Settings:
+- VITE_API_URL=https://bookipi.onrender.com/api
+
+Redeploy after saving environment variables.
+
+### 3. Verify Production
+
+- Backend health endpoint responds: https://bookipi.onrender.com/api/health
+- Backend sale status responds: https://bookipi.onrender.com/api/sale-status
+- Frontend loads and fetches live data: https://bookipi.kevinguadalupevega.com
+
+### 4. Where Full Details Live
+
+- Deployment integration details: [README.md](./README.md)
+- Setup and environment variables: [SETUP.md](./SETUP.md)
+- Vercel deployment guide: [DEPLOYMENT.md](./DEPLOYMENT.md)
+
+---
+
 ## 📚 Documentation Overview
 
 ### Core Documentation (Read These First)

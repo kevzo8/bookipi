@@ -1,5 +1,12 @@
 # 🚀 DEPLOY TO VERCEL NOW
 
+## Current Integration Note
+
+For this project's live split deployment, set this in Vercel:
+- VITE_API_URL=https://bookipi.onrender.com/api
+
+The old "no environment variables needed" guidance only applies when backend and frontend are served from the same origin or local fallback assumptions are acceptable.
+
 ## ✅ All Errors Fixed - Project Is Ready
 
 All deployment errors have been identified and fixed. Your project is **100% ready for Vercel deployment**.
@@ -49,7 +56,8 @@ Set these values:
 - **Output Directory**: `frontend/dist`
 - **Root Directory**: `./`
 
-**NO ENVIRONMENT VARIABLES NEEDED**
+Set in Vercel Environment Variables:
+- `VITE_API_URL=https://bookipi.onrender.com/api`
 
 ### 4. Deploy
 - Click "Deploy"
@@ -157,7 +165,7 @@ const getAPIBaseUrl = () => {
 ## Common Questions
 
 ### Q: Do I need to set environment variables?
-**A**: No! The project works without any environment variables set.
+**A**: For your current production setup (Vercel frontend + Render backend), yes. Set `VITE_API_URL` to your Render API base URL.
 
 ### Q: How do I connect the backend?
 **A**: 

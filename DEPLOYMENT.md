@@ -1,5 +1,12 @@
 # Vercel Deployment Guide
 
+## Current Production Integration
+
+The active deployment wiring is:
+- Frontend (Vercel): https://bookipi.kevinguadalupevega.com
+- Backend (Render): https://bookipi.onrender.com
+- Vercel environment variable: VITE_API_URL=https://bookipi.onrender.com/api
+
 ## ✅ Verified Configuration
 
 This project has been fully configured for Vercel deployment with zero errors.
@@ -9,12 +16,9 @@ This project has been fully configured for Vercel deployment with zero errors.
 #### vercel.json
 ```json
 {
-  "buildCommand": "cd frontend && npm run build",
+  "buildCommand": "pnpm install && cd frontend && pnpm build",
   "outputDirectory": "frontend/dist",
-  "framework": "vite",
-  "env": {
-    "VITE_API_URL": "@vite_api_url"
-  }
+  "framework": "vite"
 }
 ```
 
@@ -22,7 +26,7 @@ This project has been fully configured for Vercel deployment with zero errors.
 - `buildCommand`: Builds the frontend React + Vite application
 - `outputDirectory`: Points to `frontend/dist` where Vite outputs the built files
 - `framework`: Set to `vite` for proper optimization
-- No invalid properties (removed `install` field)
+- `VITE_API_URL` should be set in the Vercel dashboard (not in vercel.json)
 
 #### pnpm-workspace.yaml
 ```yaml
@@ -85,7 +89,7 @@ frontend/
 
 ### Build & Runtime
 
-- **Build Command**: `cd frontend && npm run build`
+- **Build Command**: `pnpm install && cd frontend && pnpm build`
 - **Output Directory**: `frontend/dist`
 - **Framework**: Vite (automatically optimized)
 - **Node Version**: 18.x or higher (Vercel default)
@@ -98,7 +102,7 @@ Set in Vercel project settings if needed:
 |----------|-------|---------|
 | `VITE_API_URL` | Backend API endpoint | `https://api.example.com` |
 
-For local development without environment variables, the vite proxy configuration routes `/api` requests to `http://localhost:3000`.
+Without `VITE_API_URL` in production, the frontend falls back to `/api` and expects same-origin backend routes.
 
 ### Verification Checklist
 

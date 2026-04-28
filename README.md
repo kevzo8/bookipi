@@ -255,6 +255,30 @@ Frontend starts on `http://localhost:5173`
 #### 5. Open in Browser
 Navigate to `http://localhost:5173` and start testing!
 
+## 📸 Proof the App Works
+
+These screenshots show the key runtime states of the app in action:
+
+### 1. Unknown/Error State
+This state appears when the frontend cannot fetch sale status from the API.
+
+![Bookipi unknown state](public/bookipi_unknown.png)
+
+### 2. Live Sale State
+The sale is active, stock is shown, and users can purchase.
+
+![Bookipi live sale state](public/bookipi_live.png)
+
+### 3. Successful Purchase State
+A completed purchase is confirmed and duplicate-purchase prevention is shown.
+
+![Bookipi success state](public/bookipi_success.png)
+
+### 4. Closed Sale State
+This state confirms the UI correctly reflects when the sale window has ended.
+
+![Bookipi closed state](public/bookipi_closed.png)
+
 ## 🧪 Testing
 
 ### Unit & Integration Tests
@@ -662,6 +686,43 @@ flash-sale-system/
 - ✅ Comprehensive documentation
 
 ## 🚀 Build & Deploy Instructions
+
+### Vercel + Render Integration (Current Setup)
+
+This project is deployed with:
+- Frontend on Vercel: `https://bookipi.kevinguadalupevega.com`
+- Backend on Render: `https://bookipi.onrender.com`
+
+#### 1. Render Backend Configuration
+
+In the Render Web Service (root: `backend`):
+- Build Command: `pnpm install && pnpm build`
+- Start Command: `pnpm start`
+
+Render environment variables used:
+- `HOST=0.0.0.0`
+- `CORS_ORIGIN=https://bookipi.kevinguadalupevega.com`
+- `USE_IN_MEMORY_REDIS=true`
+
+Notes:
+- `PORT` is not set manually; Render injects it automatically.
+- With `USE_IN_MEMORY_REDIS=true`, backend state resets on restarts/redeploys.
+
+#### 2. Vercel Frontend Configuration
+
+In Vercel Project Settings > Environment Variables:
+- `VITE_API_URL=https://bookipi.onrender.com/api`
+
+Redeploy the frontend after adding/updating this variable.
+
+#### 3. Verification
+
+Check backend directly:
+- `https://bookipi.onrender.com/api/health`
+- `https://bookipi.onrender.com/api/sale-status`
+
+Then open the frontend and confirm live API data appears:
+- `https://bookipi.kevinguadalupevega.com`
 
 ### Production Build
 

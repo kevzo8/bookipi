@@ -1,11 +1,18 @@
 # ✅ VERCEL DEPLOYMENT - 100% READY
 
+## Current Integration Note
+
+For the current live deployment, configure this in Vercel:
+- `VITE_API_URL=https://bookipi.onrender.com/api`
+
+This repository uses a split architecture where frontend is on Vercel and backend is on Render.
+
 ## All Errors Fixed
 
 ### Error 1: Environment Variable "VITE_API_URL" References Non-Existent Secret
 **Status**: ✅ FIXED
 - Removed `env` section from `vercel.json`
-- No environment variables required for deployment
+- No secret references are required in `vercel.json`
 - API service has fallback configuration
 
 ### Error 2: Dev Server Process Exited Before Port 3000 Became Available  
@@ -113,9 +120,9 @@ The frontend will automatically use this URL.
    - Output Directory: `frontend/dist`
    - Root Directory: ./
 
-3. **No Environment Variables Needed**
-   - Frontend works without any env vars set
-   - Backend can be configured separately when needed
+3. **Set Production Environment Variable**
+- Add `VITE_API_URL=https://bookipi.onrender.com/api`
+- Redeploy after saving environment changes
 
 4. **Deploy**
    - Click "Deploy"
@@ -154,9 +161,8 @@ The frontend will automatically use this URL.
 
 ### Missing environment variable error
 **Status**: Already fixed
-- No environment variables required
-- API service has fallback configuration
-- This error should not occur
+- Ensure `VITE_API_URL` is configured when backend is hosted on a different domain
+- Redeploy Vercel after changing env vars
 
 ---
 

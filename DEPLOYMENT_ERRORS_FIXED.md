@@ -1,5 +1,12 @@
 # Deployment Errors - FIXED
 
+## Current Integration Note
+
+For the current production setup (Vercel frontend + Render backend), add this in Vercel:
+- `VITE_API_URL=https://bookipi.onrender.com/api`
+
+The historical fix in this document removed invalid vercel.json secret references, but production still needs a valid backend URL when API is on a different origin.
+
 ## Problem Analysis & Solutions
 
 ### Error 1: Environment Variable "VITE_API_URL" References Non-Existent Secret
@@ -115,7 +122,7 @@ cd frontend && pnpm dev
 2. Set framework to "Other"
 3. Set build command: `pnpm install && cd frontend && pnpm build`
 4. Set output directory: `frontend/dist`
-5. NO environment variables needed
+5. Set `VITE_API_URL` in Vercel when backend is hosted separately
 6. Deploy!
 
 The frontend will build successfully and serve without errors. Backend API can be hosted separately.

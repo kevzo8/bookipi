@@ -137,6 +137,45 @@ CORS_ORIGIN=http://localhost:5173
 VITE_API_URL=http://localhost:3000/api
 ```
 
+## ☁️ Production Integration (Vercel + Render)
+
+This repository is currently integrated as:
+- Frontend: https://bookipi.kevinguadalupevega.com (Vercel)
+- Backend: https://bookipi.onrender.com (Render)
+
+### Render (backend service)
+
+Service settings:
+- Root Directory: backend
+- Build Command: pnpm install && pnpm build
+- Start Command: pnpm start
+
+Environment variables:
+```
+HOST=0.0.0.0
+CORS_ORIGIN=https://bookipi.kevinguadalupevega.com
+USE_IN_MEMORY_REDIS=true
+```
+
+Notes:
+- Do not set PORT manually on Render.
+- If you later switch to real Redis, set USE_IN_MEMORY_REDIS=false and provide REDIS_HOST and REDIS_PORT.
+
+### Vercel (frontend project)
+
+Set this environment variable in Project Settings > Environment Variables:
+```
+VITE_API_URL=https://bookipi.onrender.com/api
+```
+
+Redeploy Vercel after saving the variable.
+
+### Verify integration
+
+- Backend health: https://bookipi.onrender.com/api/health
+- Backend sale status: https://bookipi.onrender.com/api/sale-status
+- Frontend: https://bookipi.kevinguadalupevega.com
+
 ## 🏗️ Project Structure
 
 ```
