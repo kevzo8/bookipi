@@ -27,7 +27,7 @@ This is a **production-ready, high-performance flash sale system** that demonstr
 - **Health Checks**: Monitoring endpoints included
 
 ### ✅ Frontend (React + Vite + TypeScript)
-- **Modern UI**: Gradient design with smooth animations
+- **Modern UI**: Bookipi-aligned layout and polished responsive design
 - **Real-time Updates**: 5-second polling for live status
 - **Responsive**: Works on desktop and mobile
 - **User-Friendly**: Clear feedback on all actions

@@ -6,6 +6,12 @@
 
 All requirements met, fully tested, comprehensively documented, and production-ready.
 
+### Recent Refactor & Cleanup Highlights
+- Consolidated backend runtime configuration and endpoint guards.
+- Expanded automated tests (service + route-level integration coverage).
+- Updated stress testing for better concurrency validation visibility.
+- Standardized frontend branding and responsive behavior.
+
 ---
 
 ## 📦 What You're Receiving

@@ -12,7 +12,7 @@
 ### Step 1: Clone the Repository
 ```bash
 git clone <your-repo-url>
-cd flash-sale-system
+cd bookipi
 ```
 
 ### Step 2: Install Dependencies
@@ -42,6 +42,12 @@ redis-server
 
 **Option D: Using Windows**
 Download from: https://github.com/microsoftarchive/redis/releases
+
+**Option E: In-memory mode (no Redis required for local demo)**
+```bash
+cd backend
+USE_IN_MEMORY_REDIS=true pnpm dev
+```
 
 ### Step 4: Start the Backend
 

@@ -2,6 +2,11 @@
 
 Welcome! This document guides you through all the materials provided in this assessment submission.
 
+## 🛠️ Maintenance Note
+
+The repository includes a recent refactor/cleanup pass covering configuration centralization,
+route-level testing improvements, stress-test clarity, and UI responsiveness polish.
+
 ## 🎯 Start Here
 
 ### New to This Project?

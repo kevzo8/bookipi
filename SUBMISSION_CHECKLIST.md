@@ -6,7 +6,7 @@ This checklist verifies that all requirements from the Bookipi assessment have b
 
 ### Flash Sale Period
 - [x] Configurable start and end time
-  - Located in: `backend/src/routes/sale.routes.ts` (SALE_START, SALE_END)
+  - Located in: `backend/src/config.ts` (`FLASH_SALE_START`, `FLASH_SALE_END`)
   - Frontend updates every 5 seconds
   - Server validates timestamp on each request
   

@@ -1,5 +1,12 @@
 # System Architecture & Design Decisions
 
+## Maintenance Update
+
+- Centralized runtime sale configuration in `backend/src/config.ts`.
+- Added endpoint protection controls (optional API key + rate limiting).
+- Improved stress-test signal quality and route-level integration tests.
+- Refined frontend UX and responsive behavior for Bookipi branding.
+
 ## 🏗️ High-Level Architecture
 
 ```
