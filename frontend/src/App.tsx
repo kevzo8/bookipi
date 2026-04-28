@@ -12,6 +12,7 @@ export function App() {
   const [error, setError] = useState<string>('');
   const [loading, setLoading] = useState(true);
   const [hasPurchased, setHasPurchased] = useState(false);
+  const [isRefreshingStatus, setIsRefreshingStatus] = useState(false);
   const [lastUpdated, setLastUpdated] = useState(new Date());
 
   // Fetch sale status on mount and poll periodically
@@ -28,6 +29,11 @@ export function App() {
     } else {
       setHasPurchased(false);
     }
+
+    setPurchaseStatus('idle');
+    setPurchaseResult(null);
+    setError('');
+    setIsRefreshingStatus(false);
   }, [userId]);
 
   async function fetchSaleStatus() {
@@ -58,11 +64,25 @@ export function App() {
       return;
     }
 
+    if (hasPurchased) {
+      setPurchaseStatus('already_purchased');
+      setPurchaseResult({
+        success: false,
+        message: 'This account already secured an item.',
+        timestamp: Date.now(),
+      });
+      setError('');
+      return;
+    }
+
     setPurchaseStatus('loading');
+    setPurchaseResult(null);
     setError('');
 
     try {
       const result = await apiService.purchaseItem(userId);
+      setIsRefreshingStatus(true);
+      await Promise.all([fetchSaleStatus(), checkUserPurchaseStatus(userId)]);
       setPurchaseResult(result);
 
       if (result.success) {
@@ -81,6 +101,8 @@ export function App() {
       setPurchaseStatus('error');
       setError('An error occurred during purchase');
       setPurchaseResult(null);
+    } finally {
+      setIsRefreshingStatus(false);
     }
   }
 
@@ -135,6 +157,8 @@ export function App() {
 
   const saleState = saleStatus?.status || 'unknown';
   const statusTone = getStatusTone(saleState);
+  const alreadyPurchasedNotice = 'This account already secured an item.';
+  const isSubmitting = purchaseStatus === 'loading' || isRefreshingStatus;
 
   if (loading) {
     return (
@@ -199,8 +223,8 @@ export function App() {
               className="input"
             />
 
-            {hasPurchased && (
-              <div className="hint-banner success">This account already secured an item.</div>
+            {!purchaseResult && hasPurchased && (
+              <div className="hint-banner info">{alreadyPurchasedNotice}</div>
             )}
 
             {error && (
@@ -209,27 +233,38 @@ export function App() {
               </div>
             )}
 
+            {purchaseStatus === 'loading' && (
+              <div className="hint-banner info">Processing purchase...</div>
+            )}
+
+            {isRefreshingStatus && (
+              <div className="hint-banner info">Refreshing status...</div>
+            )}
+
             {purchaseResult && (
               <div className={`hint-banner ${getResultTone(purchaseResult)}`}>
-                {purchaseResult.message}
+                {purchaseStatus === 'already_purchased'
+                  ? alreadyPurchasedNotice
+                  : purchaseResult.message}
               </div>
             )}
 
             <button
               onClick={handlePurchase}
               disabled={
-                purchaseStatus === 'loading' ||
+                isSubmitting ||
                 !saleStatus ||
                 saleStatus.status !== 'active' ||
-                !userId.trim() ||
-                hasPurchased
+                !userId.trim()
               }
-              className={`purchase-button ${purchaseStatus === 'loading' ? 'loading' : ''} ${
-                purchaseStatus === 'success' ? 'success' : ''
-              }`}
+              className={`purchase-button ${isSubmitting ? 'loading' : ''}`}
             >
-              {purchaseStatus === 'loading' && <span className="spinner" />}
-              {purchaseStatus === 'success' ? 'Purchase Complete' : 'Buy Now'}
+              {isSubmitting && <span className="spinner" />}
+              {purchaseStatus === 'loading'
+                ? 'Processing...'
+                : isRefreshingStatus
+                  ? 'Refreshing Status...'
+                  : 'Buy Now'}
             </button>
 
             <ul className="rules-list">

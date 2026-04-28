@@ -312,13 +312,19 @@
   box-shadow: 0 12px 22px rgba(24, 91, 216, 0.28);
 }
 
+.purchase-button:active:not(:disabled) {
+  background: linear-gradient(135deg, #0e47b7 0%, #0b3e9f 100%);
+  transform: translateY(0);
+  box-shadow: 0 6px 14px rgba(14, 71, 183, 0.3);
+}
+
+.purchase-button.loading {
+  background: linear-gradient(135deg, #0b8c8c 0%, #0a6f6f 100%);
+}
+
 .purchase-button:disabled {
   opacity: 0.55;
   cursor: not-allowed;
-}
-
-.purchase-button.success {
-  background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
 }
 
 .spinner {
