@@ -19,6 +19,20 @@ async function start() {
     origin: config.api.corsOrigin,
   });
 
+  fastify.get('/', async () => {
+    return {
+      status: 'ok',
+      message: 'Bookipi backend is running',
+      endpoints: [
+        '/api/health',
+        '/api/sale-status',
+        '/api/purchase',
+        '/api/purchase-status',
+      ],
+      timestamp: Date.now(),
+    };
+  });
+
   // Connect to Redis
   try {
     await connectRedis();
