@@ -11,6 +11,16 @@ This project demonstrates a robust solution for managing high-traffic flash sale
 - **Clean Architecture**: Well-organized, maintainable code
 - **Comprehensive Testing**: Unit tests, integration tests, and stress tests
 
+## 🧹 Refactor & Cleanup Notes
+
+Recent maintenance improvements in this repository include:
+- Consolidated runtime configuration for sale window, stock, and API guards.
+- Hardened purchase path with rate limiting and optional API key enforcement.
+- Added API route integration tests to complement service-level unit tests.
+- Improved stress test assertions and reporting for concurrency validation.
+- Refined frontend UI/branding and responsive behavior for production readiness.
+- Updated deployment/testing documentation for clearer local and hosted workflows.
+
 ## 📋 Core Features
 
 ### ✅ Flash Sale Period
